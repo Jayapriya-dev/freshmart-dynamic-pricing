@@ -15,7 +15,24 @@
 - MySQL 8.0+
 
 ---
+## 📸 Screenshots
 
+### Landing Page
+![Landing Page](screenshots/home.png)
+
+### Login Page
+![Login Page](screenshots/login.png)
+
+### Register Page
+![Register Page](screenshots/register.png)
+
+### Shop Page
+![Shop Page](screenshots/shop.png)
+
+### Admin Dashboard
+![Admin Dashboard](screenshots/admin.png)
+
+---
 ## 🗄️ Step 1 — Create Database
 
 ```sql
