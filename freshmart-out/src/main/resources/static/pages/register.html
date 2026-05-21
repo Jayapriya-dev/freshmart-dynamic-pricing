@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register — FreshMart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 50%, #fff8e1 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .auth-card { background: #fff; border-radius: 20px; box-shadow: var(--shadow-xl); padding: 40px 36px; width: 100%; max-width: 460px; animation: slideUp 0.3s ease; }
+    .auth-brand { text-align: center; margin-bottom: 24px; }
+    .auth-brand-logo { font-size: 44px; display: block; margin-bottom: 8px; }
+    .auth-brand-name { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 800; }
+    .auth-brand-name span { color: var(--primary); }
+    .auth-title { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .auth-sub   { color: var(--text-muted); font-size: 14px; margin-bottom: 22px; }
+    .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+    .role-card  {
+      padding: 14px; border: 2px solid var(--border); border-radius: var(--radius-md);
+      cursor: pointer; text-align: center; transition: all var(--transition);
+    }
+    .role-card:hover { border-color: var(--primary-border); background: var(--primary-bg); }
+    .role-card.selected { border-color: var(--primary); background: var(--primary-bg); }
+    .role-card .role-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+    .role-card .role-name { font-size: 14px; font-weight: 700; }
+    .role-card .role-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .auth-footer { text-align: center; font-size: 14px; color: var(--text-muted); margin-top: 18px; }
+    .auth-footer a { color: var(--primary); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="auth-brand-logo">🌿</span>
+      <div class="auth-brand-name">Fresh<span>Mart</span></div>
+    </div>
+
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-sub">Join FreshMart and start shopping smarter.</p>
+
+    <div id="alert-box"></div>
+
+    <!-- Role picker -->
+      <input type="hidden" id="role" value="CUSTOMER" />
+
+    <form id="register-form">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" id="fullName" type="text" placeholder="Rahul Sharma" required autofocus />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" id="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" id="password" type="password" placeholder="Min. 6 characters" required minlength="6" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input class="form-input" id="confirm" type="password" placeholder="Repeat password" required />
+        </div>
+      </div>
+      <button class="btn btn-primary btn-xl btn-full" type="submit" id="register-btn">Create Account</button>
+    </form>
+
+    <p class="auth-footer">Already have an account? <a href="/pages/login.html">Sign in →</a></p>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="/js/api.js"></script>
+  <script>
+    if (Auth.isLoggedIn()) {
+      window.location.href = Auth.isAdmin() ? '/pages/admin.html' : '/pages/shop.html';
+    }
+
+<!--    function selectRole(role) {-->
+<!--      document.getElementById('role').value = role;-->
+<!--      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));-->
+<!--      document.querySelector(`[data-role="${role}"]`).classList.add('selected');-->
+<!--    }-->
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn   = document.getElementById('register-btn');
+      const alert = document.getElementById('alert-box');
+      alert.innerHTML = '';
+
+      const password = document.getElementById('password').value;
+      const confirm  = document.getElementById('confirm').value;
+      if (password !== confirm) {
+        alert.innerHTML = `<div class="alert alert-error">⚠ Passwords do not match.</div>`;
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span> Creating account…`;
+
+      try {
+        const res = await API.auth.register({
+          fullName: document.getElementById('fullName').value.trim(),
+          email:    document.getElementById('email').value.trim(),
+          password,
+          role:     document.getElementById('role').value,
+        });
+        Auth.set(res.data);
+        window.location.href = Auth.isAdmin() ? '/pages/admin.html' : '/pages/shop.html';
+      } catch (err) {
+        alert.innerHTML = `<div class="alert alert-error">⚠ ${err.message}</div>`;
+        btn.disabled = false;
+        btn.innerHTML = 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>

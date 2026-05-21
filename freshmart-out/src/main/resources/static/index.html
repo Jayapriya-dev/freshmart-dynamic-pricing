@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FreshMart — Smart Grocery Store</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { background: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .splash { text-align: center; }
+    .splash-logo { font-size: 64px; margin-bottom: 16px; animation: float 2s ease-in-out infinite; }
+    .splash-name { font-family: 'Poppins', sans-serif; font-size: 36px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    .splash-name span { color: var(--primary); }
+    .splash-sub { color: var(--text-muted); margin-bottom: 32px; font-size: 16px; }
+    .splash-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="splash">
+    <div class="splash-logo">🌿</div>
+    <div class="splash-name">Fresh<span>Mart</span></div>
+    <p class="splash-sub">Your smart grocery store with dynamic pricing</p>
+    <div class="splash-btns">
+      <a href="/pages/login.html"    class="btn btn-primary btn-lg">Sign In</a>
+      <a href="/pages/register.html" class="btn btn-secondary btn-lg">Create Account</a>
+    </div>
+  </div>
+  <script src="/js/api.js"></script>
+  <script>
+    // Auto-redirect if already logged in
+    if (Auth.isLoggedIn()) {
+      window.location.href = Auth.isAdmin() ? '/pages/admin.html' : '/pages/shop.html';
+    }
+  </script>
+</body>
+</html>

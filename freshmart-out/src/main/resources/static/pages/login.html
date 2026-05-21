@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — FreshMart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 50%, #fff8e1 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .auth-card { background: #fff; border-radius: 20px; box-shadow: var(--shadow-xl); padding: 40px 36px; width: 100%; max-width: 420px; animation: slideUp 0.3s ease; }
+    .auth-brand { text-align: center; margin-bottom: 28px; }
+    .auth-brand-logo { font-size: 48px; display: block; margin-bottom: 8px; }
+    .auth-brand-name { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 800; color: var(--text); }
+    .auth-brand-name span { color: var(--primary); }
+    .auth-title { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .auth-sub   { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+    .demo-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .demo-btn   { padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: var(--gray-50); cursor: pointer; font-size: 12px; font-weight: 600; font-family: var(--font-ui); color: var(--text-light); transition: all var(--transition); text-align: center; }
+    .demo-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
+    .auth-footer { text-align: center; font-size: 14px; color: var(--text-muted); margin-top: 18px; }
+    .auth-footer a { color: var(--primary); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="auth-brand-logo">🌿</span>
+      <div class="auth-brand-name">Fresh<span>Mart</span></div>
+    </div>
+
+    <h1 class="auth-title">Welcome back!</h1>
+    <p class="auth-sub">Sign in to your account to continue shopping.</p>
+
+    <div id="alert-box"></div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" id="email" type="email" placeholder="you@example.com" required autocomplete="email" autofocus />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="password" type="password" placeholder="••••••••" required autocomplete="current-password" />
+      </div>
+      <button class="btn btn-primary btn-xl btn-full" type="submit" id="login-btn">Sign In</button>
+    </form>
+
+    <p class="auth-footer">Don't have an account? <a href="/pages/register.html">Create one →</a></p>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="/js/api.js"></script>
+  <script>
+    // If already logged in, redirect
+    if (Auth.isLoggedIn()) {
+      window.location.href = Auth.isAdmin() ? '/pages/admin.html' : '/pages/shop.html';
+    }
+
+    function fillDemo(role) {
+      document.getElementById('email').value    = role === 'admin' ? 'admin@freshmart.com' : 'customer@freshmart.com';
+      document.getElementById('password').value = role === 'admin' ? 'admin123' : 'customer123';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn   = document.getElementById('login-btn');
+      const alert = document.getElementById('alert-box');
+      alert.innerHTML = '';
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span> Signing in…`;
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await API.auth.login({ email, password });
+        Auth.set(res.data);
+        window.location.href = Auth.isAdmin() ? '/pages/admin.html' : '/pages/shop.html';
+      } catch (err) {
+        alert.innerHTML = `<div class="alert alert-error">⚠ ${err.message}</div>`;
+        btn.disabled = false;
+        btn.innerHTML = 'Sign In';
+      }
+    });
+  </script>
+</body>
+</html>

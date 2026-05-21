@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Orders — FreshMart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .page-header { padding: 36px 0 24px; border-bottom: 1px solid var(--border); background: var(--white); margin-bottom: 32px; }
+    .page-title  { font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 800; }
+    .page-sub    { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+    .order-card  { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 16px; transition: box-shadow var(--transition); }
+    .order-card:hover { box-shadow: var(--shadow-md); }
+    .order-head  { padding: 14px 20px; background: var(--gray-50); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .order-id    { font-size: 14px; font-weight: 700; color: var(--primary); }
+    .order-date  { font-size: 12px; color: var(--text-muted); }
+    .order-body  { padding: 16px 20px; }
+    .order-items { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .oi-row      { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--gray-50); border-radius: var(--radius-sm); }
+    .oi-emoji    { font-size: 20px; flex-shrink: 0; }
+    .oi-name     { flex: 1; font-size: 13px; font-weight: 500; }
+    .oi-qty      { font-size: 12px; color: var(--text-muted); }
+    .oi-price    { font-size: 13px; font-weight: 700; }
+    .order-foot  { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--gray-100); flex-wrap: wrap; gap: 8px; }
+    .order-addr  { font-size: 12px; color: var(--text-muted); max-width: 340px; }
+    .order-total-row { text-align: right; }
+    .order-total-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; }
+    .order-total-amt { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+    .status-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <header class="navbar" id="navbar"></header>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <div class="container">
+        <h1 class="page-title">My Orders</h1>
+        <p class="page-sub" id="orders-count">Loading your orders…</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="status-filter" id="status-filter"></div>
+      <div id="orders-container"></div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script>
+    requireCustomer();
+    renderNavbar('My Orders');
+
+    const STATUSES = ['PENDING','CONFIRMED','PROCESSING','SHIPPED','DELIVERED','CANCELLED'];
+    let allOrders = [], activeStatus = '';
+
+    async function loadOrders() {
+      document.getElementById('orders-container').innerHTML = `<div class="loading-state"><div class="spinner spinner-lg spinner-dark"></div><span>Loading orders…</span></div>`;
+      try {
+        const res = await API.orders.getMyOrders();
+        allOrders = res?.data || [];
+        buildStatusFilter();
+        renderOrders(allOrders);
+        document.getElementById('orders-count').textContent = `${allOrders.length} total order${allOrders.length !== 1 ? 's' : ''}`;
+      } catch (e) {
+        document.getElementById('orders-container').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p class="empty-title">Error loading orders</p><p class="empty-desc">${e.message}</p></div>`;
+      }
+    }
+
+    function buildStatusFilter() {
+      const bar = document.getElementById('status-filter');
+      bar.innerHTML = `<span class="chip chip-active" data-s="" onclick="setStatus(this,'')">All</span>` +
+        STATUSES.filter(s => allOrders.some(o => o.status === s)).map(s =>
+          `<span class="chip chip-default" data-s="${s}" onclick="setStatus(this,'${s}')">${s}</span>`
+        ).join('');
+    }
+
+    function setStatus(el, s) {
+      activeStatus = s;
+      document.querySelectorAll('#status-filter .chip').forEach(c =>
+        c.className = `chip ${c.dataset.s === s ? 'chip-active' : 'chip-default'}`);
+      renderOrders(s ? allOrders.filter(o => o.status === s) : allOrders);
+    }
+
+    function renderOrders(orders) {
+      const container = document.getElementById('orders-container');
+      if (!orders.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📦</div>
+            <p class="empty-title">No orders yet</p>
+            <p class="empty-desc">Head to the shop and place your first order!</p>
+            <a href="/pages/shop.html" class="btn btn-primary btn-lg" style="margin-top:8px">Browse Products →</a>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = orders.map(order => {
+        const itemsHtml = (order.orderItems || []).map(i => {
+          const hasImg = i.imageUrl && i.imageUrl.trim() !== '';
+          const mediaHtml = hasImg
+            ? `<img src="${i.imageUrl}" alt="${i.productName}"
+                style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0"
+                onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'oi-emoji',textContent:'${categoryEmoji(i.category)}'}))">`
+            : `<span class="oi-emoji">${categoryEmoji(i.category)}</span>`;
+          return `
+          <div class="oi-row">
+            ${mediaHtml}
+            <span class="oi-name">${i.productName}</span>
+            <span class="oi-qty">× ${i.quantity}</span>
+            <span class="oi-price">${fmt.currency(i.subtotal)}</span>
+          </div>`;
+        }).join('');
+
+        return `
+          <div class="order-card">
+            <div class="order-head">
+              <div>
+                <div class="order-id">Order #${order.orderId}</div>
+                <div class="order-date">${fmt.date(order.orderedAt)}</div>
+              </div>
+              ${statusBadge(order.status)}
+            </div>
+            <div class="order-body">
+              <div class="order-items">${itemsHtml}</div>
+              <div class="order-foot">
+                <div class="order-addr">${order.shippingAddress ? '📍 ' + order.shippingAddress : ''}</div>
+                <div class="order-total-row">
+                  <div class="order-total-lbl">Total</div>
+                  <div class="order-total-amt">${fmt.currency(order.totalAmount)}</div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

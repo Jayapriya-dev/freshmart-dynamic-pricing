@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shop — FreshMart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    /* ── Hero ── */
+    .hero { background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 60%, #33691e 100%); color: #fff; padding: 48px 0 40px; }
+    .hero-inner { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+    .hero-label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 100px; margin-bottom: 14px; }
+    .hero-title { font-family: 'Poppins', sans-serif; font-size: clamp(26px,4vw,42px); font-weight: 800; line-height: 1.15; margin-bottom: 12px; }
+    .hero-sub { font-size: 15px; opacity: 0.85; max-width: 420px; line-height: 1.7; }
+    .pricing-rules { display: flex; flex-direction: column; gap: 8px; min-width: 240px; }
+    .rule-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-md); background: rgba(255,255,255,0.1); font-size: 13px; }
+    .rule-item.active { background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.3); }
+    .rule-live { font-size: 9px; font-weight: 800; padding: 2px 6px; background: #fff; color: var(--primary-dark); border-radius: 100px; margin-left: auto; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    /* ── Weekend banner ── */
+    #weekend-bar { background: linear-gradient(90deg, var(--accent-bg), #fffde7); border-bottom: 1px solid var(--accent-border); padding: 10px 0; text-align: center; font-size: 14px; font-weight: 600; color: #e65100; }
+
+    /* ── Toolbar ── */
+    .toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .search-box { position: relative; flex: 1; min-width: 200px; }
+    .search-box input { width: 100%; padding: 10px 36px 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; outline: none; transition: border-color var(--transition); }
+    .search-box input:focus { border-color: var(--primary); }
+    .search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); }
+    .cat-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Product Image ── */
+    .product-img-wrap {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .product-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .product-card:hover .product-img { transform: scale(1.04); }
+    .product-img.img-error { display: none; }
+    .product-img-wrap .product-emoji {
+      font-size: 56px;
+      line-height: 1;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .product-img-wrap.has-img .product-emoji { display: none; }
+    .product-img-wrap .product-tags {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 2;
+    }
+
+    /* ── Price change flash ── */
+    @keyframes priceFlash {
+      0%   { background: #fff9c4; transform: scale(1.08); }
+      100% { background: transparent; transform: scale(1); }
+    }
+    .price-changed { animation: priceFlash 1s ease-out; border-radius: 4px; }
+
+    /* ── Grid ── */
+    .product-count { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <!-- Navbar placeholder -->
+  <header class="navbar" id="navbar"></header>
+
+  <div class="page-wrap">
+    <!-- Hero -->
+    <div class="hero">
+      <div class="container">
+        <div class="hero-inner">
+          <div class="hero-text">
+            <div class="hero-label">🌱 Farm-fresh daily</div>
+            <h1 class="hero-title">Shop fresh groceries<br>at smart prices</h1>
+            <p class="hero-sub">Prices dynamically adjust based on stock levels, discounts, and day of the week.</p>
+          </div>
+          <div class="pricing-rules" id="pricing-rules">
+            <div class="rule-item"><span>📦</span><div><b>Low Stock</b> — price +10%</div></div>
+            <div class="rule-item"><span>🏷️</span><div><b>High Stock</b> — price −5%</div></div>
+            <div class="rule-item" id="weekend-rule"><span>🎉</span><div><b>Weekend</b> — extra −5%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekend banner -->
+    <div id="weekend-bar" class="hidden">🎉 Weekend Special Active — Extra 5% off everything today!</div>
+
+    <!-- Main content -->
+    <div class="container section">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="🔍  Search products…" oninput="filterProducts()" />
+          <button class="search-clear hidden" id="search-clear" onclick="clearSearch()">✕</button>
+        </div>
+        <div class="cat-bar" id="cat-bar"></div>
+      </div>
+
+      <p class="product-count" id="product-count"></p>
+      <div id="products-container"></div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer (injected by ui.js) -->
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script>
+    requireCustomer();
+    renderNavbar('Shop');
+    injectCartDrawer();
+
+    // Weekend detection
+    const isWeekend = [0, 6].includes(new Date().getDay());
+    if (isWeekend) {
+      document.getElementById('weekend-bar').classList.remove('hidden');
+      document.getElementById('weekend-rule').classList.add('active');
+      const liveTag = document.createElement('span');
+      liveTag.className = 'rule-live'; liveTag.textContent = 'LIVE';
+      document.getElementById('weekend-rule').appendChild(liveTag);
+    }
+
+    // State
+    let allProducts = [];
+    let activeCategory = '';
+
+    // Load products
+    async function loadProducts() {
+      const container = document.getElementById('products-container');
+      container.innerHTML = `
+        <div class="products-grid">
+          ${Array.from({length: 8}).map(() => `
+            <div style="background:#fff;border-radius:14px;overflow:hidden;border:1px solid var(--border)">
+              <div class="skel" style="height:220px"></div>
+              <div style="padding:14px">
+                <div class="skel" style="height:12px;width:60%;margin-bottom:10px"></div>
+                <div class="skel" style="height:16px;margin-bottom:8px"></div>
+                <div class="skel" style="height:20px;width:40%"></div>
+              </div>
+            </div>`).join('')}
+        </div>`;
+      try {
+        const res = await API.products.getAll();
+        allProducts = res?.data || [];
+        buildCategoryBar();
+        renderProducts(allProducts);
+        CartDrawer.load();
+      } catch (e) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p class="empty-title">Failed to load products</p><p class="empty-desc">${e.message}</p><button class="btn btn-primary" onclick="loadProducts()">Retry</button></div>`;
+      }
+    }
+
+    function buildCategoryBar() {
+      const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+      const bar = document.getElementById('cat-bar');
+      bar.innerHTML = `<span class="chip chip-active" data-cat="" onclick="setCategory(this,'')">All</span>` +
+        cats.map(c => `<span class="chip chip-default" data-cat="${c}" onclick="setCategory(this,'${c}')">${c}</span>`).join('');
+    }
+
+    function setCategory(el, cat) {
+      activeCategory = cat;
+      document.querySelectorAll('#cat-bar .chip').forEach(c => {
+        c.className = `chip ${c.dataset.cat === cat ? 'chip-active' : 'chip-default'}`;
+      });
+      filterProducts();
+    }
+
+    function filterProducts() {
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      document.getElementById('search-clear').classList.toggle('hidden', !q);
+      const filtered = allProducts.filter(p => {
+        const matchQ = !q || p.name.toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q);
+        const matchC = !activeCategory || p.category === activeCategory;
+        return matchQ && matchC;
+      });
+      renderProducts(filtered);
+    }
+
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('search-clear').classList.add('hidden');
+      filterProducts();
+    }
+
+    // Track previous prices to detect changes
+    let prevPrices = {};
+
+    function renderProducts(products) {
+      const container = document.getElementById('products-container');
+      const count     = document.getElementById('product-count');
+      count.textContent = `${products.length} product${products.length !== 1 ? 's' : ''}`;
+
+      if (!products.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🥬</div>
+            <p class="empty-title">No products found</p>
+            <p class="empty-desc">Try a different search or category filter</p>
+            <button class="btn btn-secondary" onclick="clearSearch();setCategory(document.querySelector('[data-cat=\\'\\']'),'')">Clear Filters</button>
+          </div>`;
+        return;
+      }
+
+      // Detect which products have changed price
+      const changedIds = new Set(
+        products
+          .filter(p => prevPrices[p.id] !== undefined && prevPrices[p.id] !== parseFloat(p.finalPrice))
+          .map(p => p.id)
+      );
+
+      // Update prevPrices
+      products.forEach(p => { prevPrices[p.id] = parseFloat(p.finalPrice); });
+
+      container.innerHTML = `<div class="products-grid">${products.map(p => productCardHTML(p)).join('')}</div>`;
+
+      // Flash changed prices
+      if (changedIds.size > 0) {
+        changedIds.forEach(id => {
+          const card = container.querySelector(`[data-product-id="${id}"] .price-final`);
+          if (card) card.classList.add('price-changed');
+        });
+        Toast.info(`💰 Prices updated for ${changedIds.size} product${changedIds.size > 1 ? 's' : ''}!`);
+      }
+    }
+
+    function productCardHTML(p) {
+      const emoji   = categoryEmoji(p.category);
+      const pct     = fmt.pct(p.basePrice, p.finalPrice);
+      const stockLow  = p.stockQuantity > 0 && p.stockQuantity < 10;
+      const stockHigh = p.stockQuantity > 100;
+      const hasDiscount = parseFloat(p.finalPrice) < parseFloat(p.basePrice);
+
+      let stockClass = 'stock-ok', stockLabel = `${p.stockQuantity} in stock`;
+      if (p.stockQuantity === 0) { stockClass = 'stock-out'; stockLabel = 'Out of stock'; }
+      else if (stockLow) { stockClass = 'stock-low'; stockLabel = `Only ${p.stockQuantity} left`; }
+
+      const tags = [
+        stockLow && p.stockQuantity > 0 ? `<span class="ptag ptag-low">Low Stock</span>` : '',
+        stockHigh ? `<span class="ptag ptag-bulk">Bulk Deal</span>` : '',
+        hasDiscount && !stockLow && !stockHigh ? `<span class="ptag ptag-sale">Sale</span>` : '',
+        !p.available ? `<span class="ptag ptag-off">Unavailable</span>` : '',
+      ].join('');
+
+      const actionsHtml = p.available && p.stockQuantity > 0 ? `
+        <div class="product-actions" style="margin-top:auto;padding-top:8px">
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(this,-1)" data-max="${p.stockQuantity}">−</button>
+            <span class="qty-val">1</span>
+            <button class="qty-btn" onclick="changeQty(this,1)" data-max="${p.stockQuantity}">+</button>
+          </div>
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="addToCart(${p.id},this)">+ Cart</button>
+        </div>` : `<button class="btn btn-secondary btn-sm btn-full" disabled style="margin-top:auto">${!p.available ? 'Unavailable' : 'Out of Stock'}</button>`;
+
+      return `
+        <div class="product-card ${!p.available ? 'unavailable' : ''}" data-product-id="${p.id}">
+          <div class="product-img-wrap${p.imageUrl ? ' has-img' : ''}">
+            ${p.imageUrl ? `<img class="product-img" src="${p.imageUrl}" alt="${p.name}"
+              onload="this.closest('.product-img-wrap').classList.add('has-img')"
+              onerror="this.classList.add('img-error');this.closest('.product-img-wrap').classList.remove('has-img')"/>` : ''}
+            <span class="product-emoji">${emoji}</span>
+            <div class="product-tags">${tags}</div>
+          </div>
+          <div class="product-body">
+            <div class="product-cat">${p.category || ''}</div>
+            <div class="product-name">${p.name}</div>
+            ${p.description ? `<div class="product-desc">${p.description}</div>` : ''}
+            <div class="price-row">
+              <span class="price-final">${fmt.currency(p.finalPrice)}</span>
+              ${hasDiscount ? `<span class="price-base">${fmt.currency(p.basePrice)}</span><span class="price-pct">${pct}% off</span>` : ''}
+            </div>
+            <div class="stock-row">
+              <span class="${stockClass}"><span class="stock-dot"></span>${stockLabel}</span>
+            </div>
+            ${actionsHtml}
+          </div>
+        </div>`;
+    }
+
+    function changeQty(btn, delta) {
+      const control = btn.closest('.qty-control');
+      const valEl   = control.querySelector('.qty-val');
+      const max     = parseInt(btn.dataset.max || btn.closest('.qty-control').querySelector('.qty-btn').dataset.max);
+      let val = parseInt(valEl.textContent) + delta;
+      val = Math.max(1, Math.min(max, val));
+      valEl.textContent = val;
+    }
+
+    async function addToCart(productId, btn) {
+      const control = btn.previousElementSibling;
+      const qty = parseInt(control.querySelector('.qty-val').textContent);
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span>`;
+      try {
+        await API.cart.add(productId, qty);
+        CartDrawer.load();
+        Toast.success('Added to cart!');
+      } catch (e) { Toast.error(e.message); }
+      finally { btn.disabled = false; btn.innerHTML = '+ Cart'; }
+    }
+
+    loadProducts();
+
+    // Reload products after an order is placed so prices/stock reflect immediately
+    function onOrderPlaced() {
+      loadProducts();
+    }
+
+    // Auto-refresh prices every 30 seconds to catch any stock/pricing changes
+    setInterval(() => {
+      if (allProducts.length > 0) loadProducts();
+    }, 30000);
+  </script>
+</body>
+</html>
