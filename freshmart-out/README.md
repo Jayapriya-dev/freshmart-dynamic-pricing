@@ -18,19 +18,19 @@
 ## 📸 Screenshots
 
 ### Landing Page
-![Landing Page](screenshots/home.png)
+![Landing Page](screenshots/Home.png)
 
 ### Login Page
-![Login Page](screenshots/login.png)
+![Login Page](screenshots/Login.png)
 
 ### Register Page
 ![Register Page](screenshots/register.png)
 
-### Shop Page
-![Shop Page](screenshots/shop.png)
+### Cart Page
+![Shop Page](screenshots/Cart.png)
 
 ### Admin Dashboard
-![Admin Dashboard](screenshots/admin.png)
+![Admin Dashboard](screenshots/Admin.png)
 
 ---
 ## 🗄️ Step 1 — Create Database
