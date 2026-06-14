@@ -37,6 +37,7 @@ public class SecurityConfig {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                     // Static frontend files (HTML, CSS, JS)
+                    .requestMatchers("/api/admin/**").permitAll()
                     .requestMatchers("/", "/index.html", "/pages/**", "/css/**", "/js/**", "/*.ico").permitAll()
                     // Public API endpoints
                     .requestMatchers("/api/auth/**").permitAll()
