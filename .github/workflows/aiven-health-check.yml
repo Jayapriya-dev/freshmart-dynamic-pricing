@@ -1,0 +1,34 @@
+name: Aiven MySQL Health Check
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  mysql-health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Test Aiven MySQL
+        env:
+          DB_HOST: ${{ secrets.AIVEN_DB_HOST }}
+          DB_PORT: ${{ secrets.AIVEN_DB_PORT }}
+          DB_USER: ${{ secrets.AIVEN_DB_USER }}
+          DB_PASSWORD: ${{ secrets.AIVEN_DB_PASSWORD }}
+          DB_NAME: ${{ secrets.AIVEN_DB_NAME }}
+        run: |
+          mysql \
+            --host="$DB_HOST" \
+            --port="$DB_PORT" \
+            --user="$DB_USER" \
+            --password="$DB_PASSWORD" \
+            --database="$DB_NAME" \
+            --ssl-mode=REQUIRED \
+            --connect-timeout=20 \
+            -e "SELECT 1;"
