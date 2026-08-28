@@ -123,7 +123,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/ui.js"></script>
   <script>
-    requireCustomer();
+    
     renderNavbar('Shop');
     injectCartDrawer();
 
@@ -161,7 +161,7 @@
         allProducts = res?.data || [];
         buildCategoryBar();
         renderProducts(allProducts);
-        CartDrawer.load();
+        if (Auth.isLoggedIn()) CartDrawer.load();
       } catch (e) {
         container.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p class="empty-title">Failed to load products</p><p class="empty-desc">${e.message}</p><button class="btn btn-primary" onclick="loadProducts()">Retry</button></div>`;
       }
@@ -303,6 +303,13 @@
     }
 
     async function addToCart(productId, btn) {
+
+      if (!Auth.isLoggedIn()) {
+    localStorage.setItem('redirectAfterLogin', window.location.pathname);
+    window.location.href = '/pages/login.html';
+    return;
+  }
+      
       const control = btn.previousElementSibling;
       const qty = parseInt(control.querySelector('.qty-val').textContent);
       btn.disabled = true;
