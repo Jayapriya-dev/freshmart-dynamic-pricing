@@ -74,10 +74,16 @@
       const password = document.getElementById('password').value;
 
       try {
-        const res = await API.auth.login({ email, password });
-        Auth.set(res.data);
-        window.location.href = Auth.isAdmin() ? '/pages/admin.html' : '/pages/shop.html';
-      } catch (err) {
+  const res = await API.auth.login({ email, password });
+  Auth.set(res.data);
+
+  const redirectTo = localStorage.getItem('redirectAfterLogin');
+  localStorage.removeItem('redirectAfterLogin');
+
+  window.location.href = Auth.isAdmin()
+    ? '/pages/admin.html'
+    : (redirectTo || '/pages/shop.html');
+} catch (err) {
         alert.innerHTML = `<div class="alert alert-error">⚠ ${err.message}</div>`;
         btn.disabled = false;
         btn.innerHTML = 'Sign In';
