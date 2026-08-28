@@ -30,10 +30,11 @@
   </div>
   <script src="/js/api.js"></script>
   <script>
+    window.location.href = '/pages/shop.html';
     // Auto-redirect if already logged in
-    if (Auth.isLoggedIn()) {
-      window.location.href = Auth.isAdmin() ? '/pages/admin.html' : '/pages/shop.html';
-    }
+    // if (Auth.isLoggedIn()) {
+    //   window.location.href = Auth.isAdmin() ? '/pages/admin.html' : '/pages/shop.html';
+    // }
   </script>
 </body>
 </html>
