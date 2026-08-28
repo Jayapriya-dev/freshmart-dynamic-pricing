@@ -36,21 +36,20 @@ public class SecurityConfig {
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                    // Static frontend files (HTML, CSS, JS)
-                    .requestMatchers("/api/admin/**").permitAll()
-                    .requestMatchers("/", "/index.html", "/pages/**", "/css/**", "/js/**", "/*.ico").permitAll()
-                    // Public API endpoints
-                    .requestMatchers("/api/auth/**").permitAll()
-                    // Admin API endpoints
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                    // Customer product browsing
-                    .requestMatchers(HttpMethod.GET, "/api/products/**").hasAnyRole("ADMIN", "CUSTOMER")
-                    // Cart operations - customers only
-                    .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
-                    // Orders - both roles
-                    .requestMatchers("/api/orders/**").hasAnyRole("ADMIN", "CUSTOMER")
-                    .anyRequest().authenticated()
-            )
+        // Static frontend files (HTML, CSS, JS)
+        .requestMatchers("/", "/index.html", "/pages/**", "/css/**", "/js/**", "/*.ico").permitAll()
+        // Public API endpoints
+        .requestMatchers("/api/auth/**").permitAll()
+        // Customer product browsing — public, guests included
+        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+        // Admin API endpoints
+        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+        // Cart operations - customers only
+        .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
+        // Orders - both roles
+        .requestMatchers("/api/orders/**").hasAnyRole("ADMIN", "CUSTOMER")
+        .anyRequest().authenticated()
+)
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
